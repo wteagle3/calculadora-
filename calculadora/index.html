@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EcoFootprint · Calculadora de emisiones de CO₂e</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<nav class="nav" aria-label="Principal">
+  <a class="brand" href="#calculadora">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15" fill="#0f5e45"/><path d="M5 19c3-5 6-8 10-10" stroke="#bff0dd" stroke-width="1.6" stroke-linecap="round"/></svg>
+    EcoFootprint
+  </a>
+  <div class="links">
+    <a href="#calculadora">Calculadora</a>
+    <a href="#resultados">Resultados</a>
+    <a href="#metodologia">Metodología y datos</a>
+  </div>
+  <button type="button" id="btnReset" class="btn ghost">Reiniciar valores</button>
+</nav>
+
+<main id="calculadora">
+  <header class="hero">
+    <div>
+      <h1>Calculadora de emisiones de CO₂e</h1>
+      <p>Estima las emisiones de tu consumo eléctrico y de tu automóvil de gasolina. Los resultados se actualizan al escribir.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Periodo de resultados">
+      <button type="button" data-vista="mensual" class="on" aria-pressed="true">Mensual</button>
+      <button type="button" data-vista="anual" aria-pressed="false">Anual</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <section class="card" aria-labelledby="t-energia">
+        <div class="card-head"><div><h2 id="t-energia">Energía y hogar</h2><p class="sub">Consumo eléctrico del recibo de luz</p></div><span class="pill" id="pillElec">—</span></div>
+
+        <div class="field">
+          <label for="personas">Personas que viven en el hogar</label>
+          <input type="number" id="personas" min="1" step="1" value="2" inputmode="numeric">
+          <span class="err" id="err-personas" role="alert"></span>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="kwh">Consumo del recibo (kWh)</label>
+            <input type="number" id="kwh" min="0" step="any" value="150" inputmode="decimal">
+            <span class="err" id="err-kwh" role="alert"></span>
+          </div>
+          <div class="field">
+            <label for="periodo">Periodo del recibo</label>
+            <select id="periodo"><option value="mensual">Mensual</option><option value="bimestral">Bimestral (se divide entre 2)</option></select>
+          </div>
+        </div>
+        <p class="note">Consumo mensual promedio: <strong id="kwhMes">—</strong></p>
+      </section>
+
+      <section class="card" aria-labelledby="t-auto">
+        <div class="card-head"><div><h2 id="t-auto">Vehículo de gasolina</h2><p class="sub">Uso semanal y rendimiento</p></div><span class="pill amber" id="pillGas">—</span></div>
+
+        <div class="field">
+          <label for="kmRange">Kilómetros por semana</label>
+          <div class="slider-row">
+            <input type="range" id="kmRange" min="0" max="1000" step="5" value="100" aria-label="Kilómetros por semana (control deslizante)">
+            <input type="number" id="km" min="0" step="any" value="100" aria-label="Kilómetros por semana (valor numérico)" inputmode="decimal">
+          </div>
+          <span class="err" id="err-km" role="alert"></span>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="rend">Rendimiento (km/L)</label>
+            <input type="number" id="rend" min="0" step="any" value="12" inputmode="decimal">
+            <span class="err" id="err-rend" role="alert"></span>
+          </div>
+          <div class="field">
+            <label for="ocupantes">Ocupantes que comparten el auto</label>
+            <input type="number" id="ocupantes" min="1" step="1" value="1" inputmode="numeric">
+            <span class="err" id="err-ocupantes" role="alert"></span>
+          </div>
+        </div>
+        <p class="note">Kilómetros al mes: <strong id="kmMes">—</strong> · Gasolina estimada: <strong id="litrosMes">—</strong></p>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card hl" id="resultados" aria-labelledby="t-res" aria-live="polite">
+        <h2 id="t-res" class="sub-title">Tu huella estimada <span class="pill" id="vistaTag">Mensual</span></h2>
+        <div class="big"><span id="total">—</span><small id="totalUnit">kg CO₂e / mes</small></div>
+        <p class="indiv">Estimación individual: <strong id="indiv">—</strong></p>
+
+        <div class="split-bar" aria-hidden="true"><i id="barElec"></i><i id="barGas"></i></div>
+        <div class="legend">
+          <div><span class="dot e"></span>Electricidad <strong id="vElec">—</strong> <em id="pElec"></em></div>
+          <div><span class="dot g"></span>Gasolina <strong id="vGas">—</strong> <em id="pGas"></em></div>
+        </div>
+
+        <div class="donut-wrap">
+          <div class="donut" id="donut" role="img" aria-label="Gráfica de dona: electricidad contra gasolina"><span id="donutTxt">—</span></div>
+          <p class="note">Supuestos: la electricidad se divide entre los integrantes del hogar; el auto se divide entre sus ocupantes.</p>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn" id="btnSave">Guardar resultado</button>
+          <button type="button" class="btn ghost" id="btnCsv">Descargar CSV</button>
+        </div>
+        <p class="status" id="status" role="status"></p>
+      </section>
+
+      <section class="card" aria-labelledby="t-eq">
+        <h2 id="t-eq">Equivalencias ilustrativas</h2>
+        <ul class="eq">
+          <li><strong id="eqTrees">—</strong><span>árboles absorbiendo CO₂ durante un año (aprox.)</span></li>
+          <li><strong id="eqKm">—</strong><span>km recorridos en un auto de gasolina promedio (aprox.)</span></li>
+        </ul>
+        <p class="note">Son aproximaciones con fines de concientización, no mediciones.</p>
+      </section>
+    </div>
+  </div>
+
+  <section class="card" id="metodologia" aria-labelledby="t-met">
+    <h2 id="t-met">Metodología y datos</h2>
+    <div class="row2">
+      <div class="field">
+        <label for="factorElec">Factor de emisión eléctrica (kg CO₂e/kWh)</label>
+        <input type="number" id="factorElec" min="0" step="any" value="0.44" inputmode="decimal">
+        <span class="err" id="err-factorElec" role="alert"></span>
+      </div>
+      <div class="field">
+        <label for="factorGas">Factor de gasolina (kg CO₂/L)</label>
+        <input type="number" id="factorGas" min="0" step="any" value="2.31" inputmode="decimal">
+        <span class="err" id="err-factorGas" role="alert"></span>
+      </div>
+    </div>
+    <ul class="formulas">
+      <li>kWh mensuales = kWh del recibo ÷ 2 si es bimestral.</li>
+      <li>Emisiones eléctricas = kWh mensuales × factor eléctrico.</li>
+      <li>Km mensuales = km semanales × 52 ÷ 12.</li>
+      <li>Litros mensuales = km mensuales ÷ rendimiento (km/L).</li>
+      <li>Emisiones de gasolina = litros × factor de gasolina.</li>
+      <li>Anual = mensual × 12. Individual = electricidad ÷ personas + gasolina ÷ ocupantes.</li>
+    </ul>
+    <p class="note"><strong>Sobre los factores:</strong> 2.31 kg CO₂/L es un valor aproximado de uso común para gasolina; el factor eléctrico de 0.44 es un valor de referencia inicial, no oficial. Ambos dependen de la región y del año: verifícalos con la autoridad energética o ambiental de tu país (por ejemplo, el inventario nacional de emisiones) antes de usarlos en un reporte. Equivalencias usadas: ~21 kg CO₂ absorbidos por árbol al año y ~0.17 kg CO₂ por km (valores ilustrativos).</p>
+    <p class="note">Esta primera versión solo contempla electricidad y gasolina, por lo que no representa tu huella de carbono total.</p>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
